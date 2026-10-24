@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1114">
+<title>Детство за колючей проволокой — цифровая карта судеб детей Карлага</title>
+<link rel="icon" href="img/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,800;1,500;1,700&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+<script>document.documentElement.className += ' js';</script>
+<style>
+:root{
+  --ink:#0e1114; --ink2:#171b20; --paper:#e9e8e4; --paper2:#d3d3cf; --cream:#f3f2ee;
+  --rust:#a8232b; --rust2:#cf3a41; --gold:#9aa5b1; --text:#1b1e22; --muted:#59606a;
+  --serif:"Playfair Display","PT Serif",Georgia,"Times New Roman",serif;
+  --body:"PT Serif",Georgia,"Times New Roman",serif;
+  --ui:"PT Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --wire-gold:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='70' height='18' viewBox='0 0 70 18'><path d='M0 9 Q17 5 35 9 T70 9' fill='none' stroke='%2399a4b0' stroke-width='1.4'/><path d='M29 3 L41 15 M41 3 L29 15' stroke='%2399a4b0' stroke-width='1.4' stroke-linecap='round'/></svg>");
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-snap-type:y proximity;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ink);color:var(--text);font-family:var(--body);overflow-x:hidden}
+img{max-width:100%;display:block}
+button{font:inherit}
+h1,h2,h3,p,figure,blockquote,ol,ul{margin:0}
+
+/* ---------- верхняя панель ---------- */
+.top{position:fixed;left:0;right:0;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+  padding:calc(10px + env(safe-area-inset-top,0px)) calc(18px + env(safe-area-inset-right,0px)) 10px calc(18px + env(safe-area-inset-left,0px));
+  background:linear-gradient(rgba(14,17,20,.88),rgba(14,17,20,.55));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  color:#e6e5e1;font-family:var(--ui);font-size:14px;letter-spacing:.04em;border-bottom:1px solid rgba(150,160,170,.25)}
+.top b{font-family:var(--serif);font-weight:700;letter-spacing:.02em;font-size:15px}
+.top .cnt{font-variant-numeric:tabular-nums;color:var(--gold)}
+.top .cnt i{font-style:normal;opacity:.6}
+.bar{position:absolute;left:0;bottom:-1px;height:2px;width:100%;background:var(--rust2);transform-origin:0 0;transform:scaleX(0)}
+
+/* ---------- точки справа ---------- */
+.dots{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:9px}
+.dots button{all:unset;cursor:pointer;width:10px;height:10px;border-radius:50%;background:rgba(150,160,170,.35);position:relative;transition:.25s;box-shadow:0 0 0 1px rgba(14,17,20,.35)}
+.dots button:hover{background:var(--gold);transform:scale(1.3)}
+.dots button.on{background:var(--rust2);transform:scale(1.5);box-shadow:0 0 0 2px rgba(233,232,228,.8)}
+.dots button span{position:absolute;right:20px;top:50%;transform:translateY(-50%);white-space:nowrap;background:var(--ink);color:#e6e5e1;
+  font:13px var(--ui);padding:5px 10px;border-radius:6px;opacity:0;pointer-events:none;transition:.2s}
+.dots button:hover span{opacity:1}
+@media (max-width:900px){.dots{display:none}}
+
+/* ---------- кнопка «дальше» ---------- */
+.next{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;width:52px;height:52px;border-radius:50%;
+  border:0;background:var(--rust);color:#fff;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.45);display:grid;place-items:center;transition:.25s;touch-action:manipulation}
+.next:hover{background:var(--rust2);transform:translateY(2px)}
+.next svg{width:22px;height:22px}
+.next.hide{opacity:0;pointer-events:none;transform:scale(.7)}
+
+/* ---------- слайд ---------- */
+.slide{position:relative;min-height:100vh;min-height:100svh;display:flex;align-items:center;justify-content:center;scroll-snap-align:start;
+  padding:calc(88px + env(safe-area-inset-top,0px)) clamp(20px,6vw,90px) clamp(48px,8vh,90px);overflow:hidden;isolation:isolate}
+.slide::before{content:"";position:absolute;inset:0;background:var(--grain);opacity:.16;mix-blend-mode:multiply;pointer-events:none;z-index:-1}
+.slide.light{background:radial-gradient(ellipse at 20% 0%,#f1f0ec 0%,var(--paper) 45%,var(--paper2) 100%);color:var(--text)}
+.slide.dark{background:radial-gradient(ellipse at 80% 0%,#262c33 0%,var(--ink2) 45%,var(--ink) 100%);color:#e6e5e1}
+.slide.dark::before{mix-blend-mode:screen;opacity:.09}
+.slide::after{content:attr(data-n);position:absolute;right:clamp(16px,4vw,60px);bottom:-.18em;font:800 clamp(7rem,20vw,16rem)/1 var(--serif);
+  color:transparent;-webkit-text-stroke:1.5px currentColor;opacity:.07;pointer-events:none;z-index:-1}
+.wrap{position:relative;width:100%;max-width:1180px;display:grid;grid-template-columns:1.05fr 1fr;gap:clamp(28px,5vw,76px);align-items:center}
+.wrap.rev{grid-template-columns:1fr 1.05fr}
+.wrap.rev .media{order:-1}
+.wrap.mapwrap{grid-template-columns:1.15fr 1fr}
+.wrap.single{grid-template-columns:1fr;max-width:880px}
+.wrap.wide{grid-template-columns:1fr}
+.col{display:flex;flex-direction:column;gap:clamp(14px,2vw,22px);min-width:0}
+@media (max-width:860px){
+  .wrap,.wrap.rev{grid-template-columns:1fr;gap:26px}
+  .wrap .media,.wrap.rev .media{order:-1}
+  .wrap.textfirst .media{order:2}
+  .wrap.mapwrap{grid-template-columns:1fr}
+  .wrap.swapm>.col:nth-child(2){order:-1}
+}
+
+/* ---------- текст ---------- */
+.kicker{font:700 12px/1 var(--ui);letter-spacing:.22em;text-transform:uppercase;color:var(--rust);display:flex;align-items:center;gap:12px}
+.dark .kicker{color:var(--gold)}
+.kicker::after{content:"";height:18px;width:70px;background:var(--wire-gold) left center/70px 18px no-repeat;opacity:.9}
+h2{font:700 clamp(1.9rem,4.6vw,3.5rem)/1.08 var(--serif);letter-spacing:-.01em;text-wrap:balance}
+h2 em{font-style:italic;color:var(--rust)}
+.dark h2 em{color:#e5484f}
+.lead{font-size:clamp(1.08rem,1.55vw,1.32rem);line-height:1.7}
+.txt{font-size:clamp(1rem,1.3vw,1.14rem);line-height:1.72}
+.txt+.txt{margin-top:-4px}
+.small{font-size:clamp(.88rem,1.05vw,.98rem);line-height:1.6;opacity:.82}
+.src{font:italic 400 .88rem/1.5 var(--body);color:var(--muted);border-left:3px solid var(--gold);padding-left:12px}
+.dark .src{color:#9ea4ab}
+.quote{position:relative;font:italic 400 clamp(1.05rem,1.4vw,1.2rem)/1.7 var(--body);padding:16px 20px 16px 22px;border-left:4px solid var(--rust);background:rgba(168,35,43,.07);border-radius:0 10px 10px 0}
+.dark .quote{border-color:var(--gold);background:rgba(150,160,170,.08)}
+.quote cite{display:block;margin-top:8px;font:normal 400 .9rem var(--ui);color:var(--muted)}
+.dark .quote cite{color:#9ea4ab}
+.chip{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;align-self:flex-start;font:700 13px var(--ui);letter-spacing:.06em;text-transform:uppercase;
+  padding:10px 16px;border-radius:999px;border:1.5px solid var(--rust);color:var(--rust);transition:.2s;touch-action:manipulation}
+.chip:hover{background:var(--rust);color:#fff}
+.dark .chip{border-color:var(--gold);color:var(--gold)}
+.dark .chip:hover{background:var(--gold);color:var(--ink)}
+.chip svg{width:16px;height:16px}
+
+/* ---------- фото ---------- */
+.photo{position:relative;background:var(--cream);padding:10px 10px 0;box-shadow:0 18px 40px rgba(0,0,0,.35),0 2px 6px rgba(0,0,0,.25);border-radius:3px;transform:rotate(var(--r,0deg));transition:transform .4s}
+.photo:hover{transform:rotate(0) scale(1.01)}
+.photo img.bw,.snips img.bw{filter:grayscale(1) contrast(1.06);transition:filter .5s}
+.photo:hover img.bw{filter:none}
+.photo img{width:100%;height:auto;border-radius:1px;cursor:zoom-in;background:#ddd}
+.photo figcaption{padding:11px 6px 13px;font:italic 400 .86rem/1.4 var(--body);color:#3a3f46;text-align:center}
+.photo figcaption span{display:block;font:700 .7rem var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--rust);margin-top:3px;font-style:normal}
+.photo.nocap{padding-bottom:10px}
+.photo.sm{max-width:340px;margin-inline:auto}
+.photo.md{max-width:460px;margin-inline:auto}
+
+/* ---------- reveal ---------- */
+.js .rv{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--d,0) * 110ms)}
+.js .slide.in .rv{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.js .rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+/* ---------- 1. обложка ---------- */
+.hero{background:url(img/cover.jpg) center/cover no-repeat,var(--paper);color:var(--ink);text-align:center}
+.hero::before{opacity:0}
+.hero::after{display:none}
+.hero .veil{position:absolute;inset:0;background:radial-gradient(ellipse 60% 55% at 50% 50%,rgba(233,232,228,.93) 0%,rgba(233,232,228,.8) 55%,rgba(233,232,228,0) 100%);z-index:-1}
+.hero .logo{width:clamp(70px,9vw,104px);height:clamp(70px,9vw,104px);border-radius:50%;box-shadow:0 6px 20px rgba(0,0,0,.25);margin:0 auto 22px;background:#fff}
+.hero h1{font:800 clamp(1.8rem,5.2vw,4rem)/1.12 var(--serif);text-wrap:balance;color:var(--ink)}
+.hero h1 em{font-style:italic;color:var(--rust)}
+.hero .who{margin-top:26px;font:400 clamp(.98rem,1.4vw,1.15rem)/1.6 var(--body);color:#2a2e33}
+.hero .who b{font-family:var(--ui);font-size:.74em;letter-spacing:.18em;text-transform:uppercase;color:var(--rust);display:block}
+.hero .kicker{justify-content:center;margin-bottom:18px}
+.hero .kicker::after{display:none}
+.hero .inner{max-width:880px}
+.scrollhint{margin-top:34px;display:inline-flex;flex-direction:column;align-items:center;gap:6px;font:700 12px var(--ui);letter-spacing:.2em;text-transform:uppercase;color:var(--rust)}
+.scrollhint svg{width:22px;height:22px;animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(7px)}}
+
+/* ---------- цель/задачи ---------- */
+.tasks{list-style:none;padding:0;counter-reset:t;display:grid;gap:10px}
+.tasks li{counter-increment:t;position:relative;padding:12px 16px 12px 58px;background:rgba(233,232,228,.07);border:1px solid rgba(150,160,170,.28);border-radius:10px;line-height:1.5;font-size:clamp(.98rem,1.25vw,1.08rem)}
+.tasks li::before{content:counter(t);position:absolute;left:14px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;background:var(--gold);color:var(--ink);font:800 1rem var(--serif);display:grid;place-items:center}
+.goal{font:italic 500 clamp(1.1rem,1.6vw,1.35rem)/1.6 var(--serif);padding-left:18px;border-left:4px solid var(--gold)}
+
+/* ---------- методы ---------- */
+.methods{list-style:none;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.methods li{padding:14px 16px;background:rgba(250,250,248,.55);border:1px solid rgba(89,96,106,.25);border-radius:10px;font:700 clamp(.9rem,1.1vw,1rem)/1.35 var(--ui);display:flex;gap:12px;align-items:center}
+.methods li b{flex:none;width:30px;height:30px;border-radius:50%;background:var(--rust);color:#fff;display:grid;place-items:center;font:800 .95rem var(--serif)}
+@media (max-width:480px){.methods{grid-template-columns:1fr}}
+.pair{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start}
+.pair .photo:nth-child(2){margin-top:34px}
+.call{margin-top:16px;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);border:1px solid rgba(0,0,0,.08)}
+
+/* ---------- вопрос ---------- */
+.q h2{text-align:center;max-width:960px;margin-inline:auto;font-size:clamp(1.5rem,3.6vw,2.7rem);line-height:1.2;font-weight:500;font-style:italic}
+.qrow{display:grid;grid-template-columns:auto minmax(0,520px) auto;gap:clamp(8px,4vw,56px);align-items:center;justify-content:center;margin-top:30px}
+.qrow .glyph{font:800 clamp(5rem,16vw,13rem)/.8 var(--serif);color:var(--rust2);text-shadow:0 8px 30px rgba(0,0,0,.5)}
+@media (max-width:640px){.qrow{grid-template-columns:1fr 1fr}.qrow .photo{grid-column:1/-1;order:3}.qrow .glyph:first-child{text-align:right}}
+
+/* ---------- карта ---------- */
+.mapslide{background:#0b0d0f;color:#ecebe7}
+.mapslide::before{display:none}
+.mapslide .bg{position:absolute;inset:0;z-index:-2;background:url(img/map-preview.jpg) center/cover;filter:blur(14px) brightness(.38) saturate(.9);transform:scale(1.08)}
+.mapslide .bgv{position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(10,12,14,.92) 0%,rgba(10,12,14,.55) 55%,rgba(10,12,14,.8) 100%)}
+.mapcard{position:relative;display:block;width:100%;padding:0;border:0;cursor:pointer;background:none;border-radius:6px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.65),0 0 0 6px rgba(233,232,228,.9);transition:transform .35s;touch-action:manipulation}
+.mapcard:hover{transform:scale(1.015) rotate(-.4deg)}
+.mapcard img{width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+.mapcard .play{position:absolute;inset:0;display:grid;place-items:center;background:rgba(10,12,14,.28);transition:.3s}
+.mapcard:hover .play{background:rgba(10,12,14,.08)}
+.mapcard .play span{display:inline-flex;align-items:center;gap:10px;background:var(--rust);color:#fff;font:700 clamp(.85rem,1.3vw,1rem) var(--ui);letter-spacing:.08em;text-transform:uppercase;padding:14px 22px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.mapcard .play svg{width:20px;height:20px}
+.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:12px;align-self:flex-start;background:var(--rust);color:#fff;
+  font:700 clamp(.9rem,1.2vw,1.02rem) var(--ui);letter-spacing:.08em;text-transform:uppercase;padding:18px 28px;border-radius:999px;box-shadow:0 10px 28px rgba(168,35,43,.5);transition:.25s;touch-action:manipulation;position:relative}
+.btn:hover{background:var(--rust2);transform:translateY(-2px)}
+.btn svg{width:20px;height:20px}
+.btn.pulse::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:0 0 0 0 rgba(207,58,65,.7);animation:pulse 2.2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 20px rgba(207,58,65,0)}100%{box-shadow:0 0 0 0 rgba(207,58,65,0)}}
+.hint{display:flex;gap:10px;align-items:flex-start;font:400 .92rem/1.5 var(--ui);color:#b4b9bf}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font:700 .9rem var(--ui);color:#e6e5e1}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{width:12px;height:16px;background:var(--rust2);border-radius:1px 4px 4px 1px;display:inline-block;position:relative}
+
+/* ---------- цитата ---------- */
+.big{font:italic 400 clamp(1.1rem,1.75vw,1.5rem)/1.65 var(--body);position:relative;padding-top:.6em}
+.big::before{content:"«";position:absolute;left:-.1em;top:-.55em;font:800 5.5rem/1 var(--serif);color:var(--rust);opacity:.35}
+.big .by{display:block;margin-top:18px;font:700 .86rem var(--ui);letter-spacing:.1em;text-transform:uppercase;font-style:normal;color:var(--muted)}
+
+/* ---------- числа и таблицы ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.stat{padding:16px 16px 14px;border-radius:12px;background:rgba(233,232,228,.07);border:1px solid rgba(150,160,170,.35)}
+.light .stat{background:rgba(250,250,248,.6);border-color:rgba(89,96,106,.3)}
+.stat b{display:block;font:800 clamp(2.2rem,4.4vw,3.4rem)/1 var(--serif);color:var(--gold)}
+.light .stat b{color:var(--rust)}
+.dark .stat b{color:#e6e5e1}
+.stat span{display:block;margin-top:8px;font:400 .9rem/1.4 var(--ui);opacity:.9}
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+table.t{width:100%;border-collapse:collapse;font:400 clamp(.95rem,1.2vw,1.05rem) var(--body);background:rgba(250,250,248,.96);color:var(--text);min-width:360px}
+table.t th{background:var(--ink2);color:#e9e8e4;font:700 .78rem var(--ui);letter-spacing:.08em;text-transform:uppercase;padding:13px 12px;text-align:center}
+table.t td{padding:13px 12px;text-align:center;border-bottom:1px solid rgba(89,96,106,.25);font-variant-numeric:tabular-nums}
+table.t tr:last-child td{border-bottom:0}
+table.t td:last-child{font-weight:700;color:var(--rust)}
+table.t tbody tr:nth-child(even){background:rgba(150,160,170,.14)}
+
+/* ---------- практическая значимость ---------- */
+.books{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.books .photo:nth-child(2){margin-top:26px}
+.snips{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.snips img{border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.4);cursor:zoom-in;background:#fff;width:100%}
+.snips .full{grid-column:1/-1}
+
+/* ---------- источники ---------- */
+.srcs{list-style:none;padding:0;counter-reset:s;display:grid;gap:10px}
+.srcs li{counter-increment:s;position:relative;padding:14px 16px 14px 56px;background:rgba(250,250,248,.55);border:1px solid rgba(89,96,106,.25);border-radius:10px;line-height:1.5;font-size:clamp(.96rem,1.2vw,1.06rem)}
+.srcs li::before{content:counter(s);position:absolute;left:14px;top:12px;width:30px;height:30px;border-radius:50%;background:var(--ink2);color:var(--gold);font:700 .95rem var(--serif);display:grid;place-items:center}
+
+/* ---------- финал ---------- */
+.final h2{font-size:clamp(2rem,5vw,3.8rem)}
+.final .who{font:400 .95rem/1.7 var(--ui);color:#9ea4ab;border-top:1px solid rgba(150,160,170,.3);padding-top:16px;margin-top:6px}
+.final .who b{color:#e6e5e1}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn.ghost{background:transparent;border:1.5px solid var(--gold);color:var(--gold);box-shadow:none;padding:15px 24px}
+.btn.ghost:hover{background:var(--gold);color:var(--ink)}
+.region{max-width:420px;margin-inline:auto;filter:drop-shadow(0 12px 30px rgba(0,0,0,.6))}
+
+/* ---------- оверлей карты ---------- */
+.map-ov{position:fixed;inset:0;z-index:100;background:#1b1f27;opacity:0;transform:scale(.985);transition:opacity .28s,transform .28s}
+.map-ov[hidden]{display:none}
+.map-ov.show{opacity:1;transform:none}
+.map-ov iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#1b1f27}
+.map-ov .load{position:absolute;inset:0;display:grid;place-items:center;color:#8d8a80;font:16px var(--ui)}
+.map-close{position:absolute;z-index:3;left:calc(12px + env(safe-area-inset-left,0px));top:calc(12px + env(safe-area-inset-top,0px));display:inline-flex;align-items:center;gap:10px;
+  height:48px;padding:0 20px 0 16px;border:0;border-radius:12px;background:var(--rust);color:#fff;font:700 15px var(--ui);cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.5);touch-action:manipulation}
+.map-close:hover{background:var(--rust2)}
+.map-close svg{width:20px;height:20px}
+@media (max-width:420px){.map-close span{display:none}.map-close{padding:0 14px}}
+
+/* ---------- лайтбокс ---------- */
+.lb{position:fixed;inset:0;z-index:90;background:rgba(10,7,4,.94);display:grid;place-items:center;padding:20px;opacity:0;transition:opacity .25s;cursor:zoom-out}
+.lb[hidden]{display:none}
+.lb.show{opacity:1}
+.lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;box-shadow:0 20px 60px rgba(0,0,0,.7);background:#fff}
+.lb button{position:absolute;right:calc(14px + env(safe-area-inset-right,0px));top:calc(14px + env(safe-area-inset-top,0px));width:46px;height:46px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:24px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- ============ Верхняя панель ============ -->
+<header class="top">
+  <b>Дети Карлага</b>
+  <span class="cnt"><span id="cur">01</span> <i>/ 19</i></span>
+  <div class="bar" id="bar"></div>
+</header>
+<nav class="dots" id="dots" aria-label="Слайды"></nav>
+<button class="next" id="next" aria-label="Следующий слайд">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+</button>
+
+<main id="feed">
+
+<!-- 1 · Обложка -->
+<section class="slide hero" data-title="Начало" data-n="01">
+  <div class="veil"></div>
+  <div class="inner">
+    <img class="logo rv" src="img/logo.png" alt="Логотип школы DARYN" style="--d:0">
+    <div class="kicker rv" style="--d:1">Исследовательская работа</div>
+    <h1 class="rv" style="--d:2">«Детство за колючей проволокой: <em>цифровая карта судеб</em> детей Карлага»</h1>
+    <p class="who rv" style="--d:3">
+      <b>Выполнила</b>Бартчик Варвара<br>
+      <b style="margin-top:12px">Научный руководитель</b>м.г.н., Тобылов А.С.
+    </p>
+    <div class="scrollhint rv" style="--d:4">Листайте вниз
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+  </div>
+</section>
+
+<!-- 2 · Исторический контекст -->
+<section class="slide dark" data-title="Исторический контекст" data-n="02">
+  <div class="wrap">
+    <div class="col">
+      <div class="kicker rv">Введение</div>
+      <h2 class="rv" style="--d:1">Исторический <em>контекст</em> репрессий</h2>
+      <p class="lead rv" style="--d:2">В 30-50-х гг. ХХ века политические репрессии затронули тысячи семей. После ареста родителей дети оставались без попечения, передавались родственникам или направлялись в детские учреждения. Особое место в этих процессах занимал Карлаг.</p>
+    </div>
+    <figure class="photo rv" style="--d:2;--r:1.2deg">
+      <img src="img/s2.jpg" class="bw" alt="Детсад п. Долинка, 1949 г." data-zoom loading="lazy">
+      <figcaption>Детсад п. Долинка. 1949 г.<span>МПЖПР ОФ ДИМ 3955</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 3 · Актуальность -->
+<section class="slide light" data-title="Актуальность" data-n="03">
+  <div class="wrap rev">
+    <div class="col">
+      <div class="kicker rv">Почему это важно</div>
+      <h2 class="rv" style="--d:1"><em>Актуальность</em> исследования</h2>
+      <p class="lead rv" style="--d:2">Судьбы детей, пострадавших от политических репрессий, остаются одной из малоизученных страниц истории Карагандинского региона. Цифровая карта позволяет восстановить и наглядно показать маршруты их судеб на основе исторических источников.</p>
+    </div>
+    <figure class="photo rv" style="--d:2;--r:-1.2deg">
+      <img src="img/s3.jpg" class="bw" alt="Дети Карлага" data-zoom loading="lazy">
+      <figcaption>Дети Карлага.<span>МПЖПР ОФ ДИМ 3951</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 4 · Цель и задачи -->
+<section class="slide dark" data-title="Цель и задачи" data-n="04">
+  <div class="wrap">
+    <div class="col">
+      <div class="kicker rv">Что мы хотим узнать</div>
+      <h2 class="rv" style="--d:1">Цель и <em>задачи</em> исследования</h2>
+      <p class="goal rv" style="--d:2">Восстановить и визуализировать маршруты судеб детей, пострадавших от политических репрессий, на территории Карагандинского региона.</p>
+      <ol class="tasks rv" style="--d:3">
+        <li>Изучить исторические источники о судьбах детей репрессированных.</li>
+        <li>Определить основные маршруты их перемещения.</li>
+        <li>Выявить детские учреждения, связанные с их судьбами.</li>
+        <li>Создать цифровую карту, объединяющую выявленные факты, фотографии и источники.</li>
+        <li>Показать влияние репрессий на судьбы детей и сохранить память о них.</li>
+      </ol>
+    </div>
+    <figure class="photo md rv" style="--d:2;--r:1.4deg">
+      <img src="img/s4.jpg" class="bw" alt="Детгородок" data-zoom loading="lazy">
+      <figcaption>Детгородок<span>МПЖПР ОФ ДИМ 4288</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 5 · Методы -->
+<section class="slide light" data-title="Методы исследования" data-n="05">
+  <div class="wrap rev">
+    <div class="media rv" style="--d:2">
+      <div class="pair">
+        <figure class="photo nocap" style="--r:-1.5deg"><img src="img/m1.jpg" alt="За работой над исследованием" data-zoom loading="lazy"></figure>
+        <figure class="photo nocap" style="--r:1.6deg"><img src="img/m2.jpg" alt="Работа с книгой" data-zoom loading="lazy"></figure>
+      </div>
+      <img class="call" src="img/call.png" alt="Скриншот звонка — интервью" data-zoom loading="lazy">
+    </div>
+    <div class="col">
+      <div class="kicker rv">Как мы работали</div>
+      <h2 class="rv" style="--d:1"><em>Методы</em> исследования</h2>
+      <ul class="methods rv" style="--d:2">
+        <li><b>1</b>Источниковедческий анализ</li>
+        <li><b>2</b>Биографический метод</li>
+        <li><b>3</b>Историко-сравнительный метод</li>
+        <li><b>4</b>Метод интервью</li>
+        <li><b>5</b>Картографический метод</li>
+        <li><b>6</b>Цифровая визуализация</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 6 · Вопрос -->
+<section class="slide dark q" data-title="Главный вопрос" data-n="06">
+  <div class="wrap wide">
+    <div>
+      <div class="kicker rv" style="justify-content:center">Исследовательский вопрос</div>
+      <h2 class="rv" style="--d:1;margin-top:18px">Как политические репрессии повлияли на судьбы детей и какие маршруты их перемещения можно восстановить на территории Карагандинского региона?</h2>
+    </div>
+    <div class="qrow rv" style="--d:2">
+      <div class="glyph" aria-hidden="true">?</div>
+      <figure class="photo" style="--r:-1deg">
+        <img src="img/letter.jpg" class="bw" alt="Письмо с конвертом Берковской Б. от дочери" data-zoom loading="lazy">
+        <figcaption>Письмо с конвертом Берковской Б., узнице «АЛЖИРа» от дочери Берковской Лены (Мины)<span>МММК «АЛЖИР» · ПМОФ-3018</span></figcaption>
+      </figure>
+      <div class="glyph" aria-hidden="true">!</div>
+    </div>
+    <p class="src rv" style="--d:3;max-width:760px;margin-inline:auto">Источник: Музейно-мемориальный комплекс жертв политических репрессий и тоталитаризма «АЛЖИР», ПМОФ-3018</p>
+  </div>
+</section>
+
+<!-- 7 · КАРТА -->
+<section class="slide mapslide" data-title="Интерактивная карта" data-n="07" id="mapslide">
+  <div class="bg"></div><div class="bgv"></div>
+  <div class="wrap rev mapwrap">
+    <button class="mapcard media rv" style="--d:2" data-open-map aria-label="Открыть интерактивную карту">
+      <img src="img/map-preview.jpg" alt="Карта Карагандинской области с маршрутами №1–№4">
+      <span class="play"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>Открыть карту</span></span>
+    </button>
+    <div class="col">
+      <div class="kicker rv" style="color:var(--gold)">Цифровая карта</div>
+      <h2 class="rv" style="--d:1">Маршруты <em style="color:#e5484f">судеб</em> на карте региона</h2>
+      <p class="lead rv" style="--d:2">Четыре отмеченных места — №1, №2, №3 и №4. Красные стрелки показывают, как перемещались дети. Нажмите на флажок, чтобы увидеть фото, документ и рассказ.</p>
+      <div class="legend rv" style="--d:3"><span><i></i>Флажок — история места</span><span>→ Маршрут перемещения</span></div>
+      <button class="btn pulse rv" style="--d:3" data-open-map>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>
+        Открыть интерактивную карту
+      </button>
+      <p class="hint rv" style="--d:4"><span>☝</span><span>Карту можно двигать пальцем или мышью, приближать щипком или колесом. Закрыть — кнопкой сверху или клавишей Esc.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- 8 · Воспоминания (точка №1) -->
+<section class="slide light" data-title="Воспоминания Зибы" data-n="08">
+  <div class="wrap rev">
+    <figure class="photo sm rv" style="--d:1;--r:-2deg">
+      <img src="img/book.jpg" alt="Обложка «Страницы трагических судеб»" data-zoom loading="lazy">
+    </figure>
+    <div class="col">
+      <div class="kicker rv">Точка №1 · Голос очевидца</div>
+      <blockquote class="big rv" style="--d:1">После ареста отца меня и подобных мне исключили из пионеров, так как мы, дети «врагов народа», не имели права носить пионерские галстуки. Наши сверстники стали сторониться нас. Мы были, как белые вороны. Подобное происходило и среди комсомольцев. Но все это было цветочками. Спустя некоторое время арестовали и маму, а нас, детей, отправили в детдом. Но родственники, узнав о случившемся, выкрали меня и моего брата Арыстана из детского дома и увезли в родной аул моего отца. Спасибо людям за то, что жалели нас и не дали погибнуть!»
+        <span class="by">Из воспоминаний дочери К. Кожановой Зибы</span></blockquote>
+      <button class="chip rv" style="--d:2" data-open-map><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/></svg>Показать на карте</button>
+    </div>
+  </div>
+</section>
+
+<!-- 9 · Детприёмник (точка №2) -->
+<section class="slide dark" data-title="Детприёмник НКВД" data-n="09">
+  <div class="wrap">
+    <div class="col">
+      <div class="kicker rv">Точка №2 · Майкудук</div>
+      <h2 class="rv" style="--d:1">Пункт приёма: <em>детприёмник НКВД</em></h2>
+      <p class="lead rv" style="--d:2">В каждом городе, где осуществлялись процессы перемещения детей, были специально оборудованы пункты приема и распределения, куда детей доставляли сразу после ареста матерей. На территории Карагандинской области имелся единственный детприемник НКВД, откуда дети репрессированных отправлялись по детским домам области. Детприемник НКВД находился в поселке Майкудук.</p>
+      <p class="src rv" style="--d:3">ГАКО. Ф.664. Оп.1. Д.36.</p>
+      <button class="chip rv" style="--d:3" data-open-map><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/></svg>Показать на карте</button>
+    </div>
+    <figure class="photo sm rv" style="--d:2;--r:1.5deg">
+      <img src="img/museum.jpg" class="bw" alt="Экспозиция музея: дети репрессированных" data-zoom loading="lazy">
+    </figure>
+  </div>
+</section>
+
+<!-- 10 · Осакаровские детдома (точка №3) -->
+<section class="slide light" data-title="Осакаровские детские дома" data-n="10">
+  <div class="wrap rev">
+    <figure class="photo sm rv" style="--d:2;--r:-1.5deg">
+      <img src="img/doc.jpg" class="bw" alt="Документ из фондов музея «АЛЖИР»" data-zoom loading="lazy">
+      <figcaption>Осакаровские детские дома №5 и №9<span>(Пионерский и Литвинский)</span></figcaption>
+    </figure>
+    <div class="col">
+      <div class="kicker rv">Точка №3 · Осакаровский район</div>
+      <h2 class="rv" style="--d:1">Осакаровские <em>детские дома</em> №5 и №9</h2>
+      <p class="txt rv" style="--d:2">В отличие от других домов младенца женщины Акмолинского лагеря знали, что их дети направляются в Осакаровский детский дом. Это подтверждает и М.Т. Юзипенко:</p>
+      <blockquote class="quote rv" style="--d:2">«В Акмолинском лагере находилось 400 детей, но вся беда в том, что, когда ребенок достигал четырехлетнего возраста, его отправляли в Осакаровский детский дом».</blockquote>
+      <p class="src rv" style="--d:3">Музейно-мемориальный комплекс жертв политических репрессий и тоталитаризма «АЛЖИР», ПМОФ-3021</p>
+      <button class="chip rv" style="--d:3" data-open-map><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/></svg>Показать на карте</button>
+    </div>
+  </div>
+</section>
+
+<!-- 11 · Пионерский детдом -->
+<section class="slide dark" data-title="Пионерский детский дом" data-n="11">
+  <div class="wrap">
+    <div class="col">
+      <div class="kicker rv">Детский дом №9</div>
+      <h2 class="rv" style="--d:1"><em>Пионерский</em> детский дом</h2>
+      <p class="lead rv" style="--d:2">Пионерский детский дом поселка № 9 Осакаровского района Карагандинской области был основан в октябре 1935 года и первоначально находился в ведении спецкомендатуры. Организован он был изначально для детей спецпереселенцев умерших при этапировании к местам высылки, а также скончавшихся от болезней в первые годы основания села.</p>
+    </div>
+    <figure class="photo rv" style="--d:2;--r:1deg">
+      <img src="img/plan.jpg" alt="Схематический план территории детдома" data-zoom loading="lazy">
+      <figcaption>Схематический план территории детдома</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 12 · Литвинский детдом -->
+<section class="slide light" data-title="Литвинский детский дом" data-n="12">
+  <div class="wrap rev">
+    <figure class="photo sm rv" style="--d:2;--r:-1.2deg">
+      <img src="img/school.jpg" alt="Школа-интернат-колледж Осакаровского района" data-zoom loading="lazy">
+      <figcaption>Школа-интернат-колледж Осакаровского района</figcaption>
+    </figure>
+    <div class="col">
+      <div class="kicker rv">Детский дом №5</div>
+      <h2 class="rv" style="--d:1"><em>Литвинский</em> детский дом</h2>
+      <p class="lead rv" style="--d:2">Недалеко от районного центра Осакаровка находится поселок Есиль — прежнее название Литвинское, заселенное в 30-е годы спецпереселенцами, репрессированными… Тогда же был открыт №5 Литвинский детский дом.</p>
+      <p class="small rv" style="--d:3">КГУ «Школа-Интернат-Колледж Осакаровского района» управления образования Карагандинской области 27.07.2020 года на основании Постановления Акимата Карагандинской области осуществлено переименование КГУ «Литвинская школа-интернат для детей-сирот и детей, оставшихся без попечения родителей, Осакаровского района Карагандинской области» управления образования Карагандинской области в КГУ «Школа-интернат-колледж Осакаровского района» Управления образования Карагандинской области.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 13 · Компанейский детдом -->
+<section class="slide dark" data-title="Компанейский детский дом" data-n="13">
+  <div class="wrap">
+    <div class="col">
+      <div class="kicker rv">Детский дом</div>
+      <h2 class="rv" style="--d:1"><em>Компанейский</em> детский дом</h2>
+      <p class="lead rv" style="--d:2">Компанейский детский дом был создан в 30-х годах. Первыми его «жильцами» были беспризорники и малолетние преступники, а само учреждение являлось тогда трудовой колонией. Позже стало детским домом, но контингент оставался тот же: сироты, беспризорники.</p>
+      <p class="src rv" style="--d:3">Е. Кузнецова. Дети Карлага</p>
+    </div>
+    <figure class="photo rv" style="--d:2;--r:1.2deg">
+      <img src="img/news.jpg" class="bw" alt="Газетная статья «Дети Карлага»" data-zoom loading="lazy">
+      <figcaption>Е. Кузнецова. «Дети Карлага»</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 14 · Учебный комбинат (точка №4) -->
+<section class="slide light" data-title="Подготовка кадров в Карлаге" data-n="14">
+  <div class="wrap rev">
+    <figure class="photo md rv" style="--d:2;--r:-1deg">
+      <img src="img/table1.png" alt="Трудовое использование подростков-спецпереселенцев" data-zoom loading="lazy">
+      <figcaption>Нажмите на таблицу, чтобы увеличить</figcaption>
+    </figure>
+    <div class="col">
+      <div class="kicker rv">Точка №4 · Долинка</div>
+      <h2 class="rv" style="--d:1">Подготовка <em>кадров</em> в Карлаге</h2>
+      <p class="txt rv" style="--d:2">Карлаг систематически занимался подготовкой кадров для всех отраслей экономики. В 1932 году на учебном комбинате села Долинское действовали курсы по подготовке следующих специалистов: модельщиков, слесарей, токарей, животноводов, столяров, плотников, агрономов, зоотехников, шоферов, штукатуров, каменщиков, фрезеровщиков, фельдшеров и т.п. Из этой среды не стоит исключать несовершеннолетних узников Карлага, которые были вовлечены в учебный процесс.</p>
+      <p class="src rv" style="--d:3">Таблица составлена по материалам диссертационного исследования Калыбековой М.Ч., которая использовала документы Архива Комитета по правовой статистике и спецучетам Генеральной Прокуратуры РК.</p>
+      <button class="chip rv" style="--d:3" data-open-map><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/></svg>Показать на карте</button>
+    </div>
+  </div>
+</section>
+
+<!-- 15 · Количество детей -->
+<section class="slide dark" data-title="Количество детей Карлага" data-n="15">
+  <div class="wrap">
+    <div class="col">
+      <div class="kicker rv">В цифрах</div>
+      <h2 class="rv" style="--d:1">Количество детей Карлага <em>по годам</em></h2>
+      <div class="stats rv" style="--d:2">
+        <div class="stat"><b>1048</b><span>детей родилось в Карлаге в 1940–1941 годах</span></div>
+        <div class="stat"><b>1713</b><span>детей — в 1950–1952 годах</span></div>
+        <div class="stat"><b>576</b><span>детей размещены в 5 домах младенца</span></div>
+      </div>
+      <p class="txt rv" style="--d:3">По состоянию на 1 января 1938 года в Карлаге находились 655 беременных и кормящих матерей из 2103 женщин. В 1941 году прибыл этап со 108 беременными женщинами [c.85].</p>
+      <p class="src rv" style="--d:3">Шаймуханов Д.А., Шаймуханова С.Д. Карлаг. – Караганда, 1997. – 175 с.</p>
+    </div>
+    <div class="tblwrap rv" style="--d:2">
+      <table class="t">
+        <thead><tr><th>№</th><th>Год</th><th>Детей<br>до 16 лет</th><th>Детей<br>до 18 лет</th><th>Итого</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>1940</td><td>19</td><td>132</td><td>151</td></tr>
+          <tr><td>2</td><td>1942</td><td>38</td><td>178</td><td>216</td></tr>
+          <tr><td>3</td><td>1947</td><td>–</td><td>–</td><td>814</td></tr>
+          <tr><td>4</td><td>1950</td><td>–</td><td>–</td><td>209</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 16 · Смертность -->
+<section class="slide light" data-title="Смертность детей" data-n="16">
+  <div class="wrap rev swapm">
+    <div class="col">
+      <div class="tblwrap rv" style="--d:2">
+        <table class="t">
+          <thead><tr><th>Годы</th><th>Среднемесячный контингент детей за год</th><th>Всего умерло за год</th></tr></thead>
+          <tbody>
+            <tr><td>1941</td><td>1001</td><td>202</td></tr>
+            <tr><td>1942</td><td>805</td><td>314</td></tr>
+            <tr><td>1943</td><td>733</td><td>226</td></tr>
+            <tr><td>1944</td><td>837</td><td>182</td></tr>
+            <tr><td>1945</td><td>740</td><td>–</td></tr>
+            <tr><td>1950</td><td>–</td><td>143</td></tr>
+            <tr><td>1951</td><td>880</td><td>99</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src rv" style="--d:3">* Таблица составлена на основе данных труда Шаймуханов Д.А., Шаймуханова С.Д. Карлаг.</p>
+    </div>
+    <div class="col">
+      <div class="kicker rv">Цена лагеря</div>
+      <h2 class="rv" style="--d:1">Дети, <em>которые не вернулись</em></h2>
+      <div class="stats rv" style="--d:2">
+        <div class="stat"><b>451</b><span>малолетка в лагере в 1939 году</span></div>
+        <div class="stat"><b>114</b><span>детей умерло за один год</span></div>
+      </div>
+      <blockquote class="quote rv" style="--d:3">Как вспоминает в ту пору несовершеннолетняя узница Карлага Людмила Дембовская, «дети умирали как мухи, не было ни дня, что бы не хоронили по 18-20 человек».</blockquote>
+      <figure class="photo rv" style="--d:3;--r:1deg;max-width:420px">
+        <img src="img/gate.jpg" alt="Мемориал на территории Карлага" data-zoom loading="lazy">
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- 17 · Практическая значимость -->
+<section class="slide dark" data-title="Практическая значимость" data-n="17">
+  <div class="wrap">
+    <div class="col">
+      <div class="kicker rv">Для чего это нужно</div>
+      <h2 class="rv" style="--d:1"><em>Практическая</em> значимость</h2>
+      <p class="lead rv" style="--d:2">Созданная интерактивная цифровая карта позволяет наглядно изучать судьбы детей репрессированных и может использоваться на уроках истории Казахстана, классных часах, музейных и краеведческих мероприятиях.</p>
+      <div class="snips rv" style="--d:3">
+        <img src="img/x1.png" alt="Страница учебника" data-zoom loading="lazy">
+        <img src="img/x2.png" alt="Страница учебника" data-zoom loading="lazy">
+        <img class="full" src="img/x3.png" alt="Страница учебника" data-zoom loading="lazy">
+      </div>
+    </div>
+    <div class="books rv" style="--d:2">
+      <figure class="photo nocap" style="--r:-1.5deg"><img src="img/t1.jpg" alt="Учебник «История Казахстана», 8 класс" data-zoom loading="lazy"></figure>
+      <figure class="photo nocap" style="--r:1.5deg"><img src="img/t2.jpg" alt="Учебник «Қазақстан тарихы», 8 класс" data-zoom loading="lazy"></figure>
+    </div>
+  </div>
+</section>
+
+<!-- 18 · Источники -->
+<section class="slide light" data-title="Источники" data-n="18">
+  <div class="wrap rev">
+    <figure class="photo sm rv" style="--d:2;--r:-1.5deg">
+      <img src="img/ku.jpg" alt="А. Кукушкина. Акмолинский лагерь жен «изменников Родины»" data-zoom loading="lazy">
+    </figure>
+    <div class="col">
+      <div class="kicker rv">Литература и архивы</div>
+      <h2 class="rv" style="--d:1">Список использованных <em>источников</em></h2>
+      <ol class="srcs rv" style="--d:2">
+        <li>Шаймуханов Д.А., Шаймуханова С.Д. Карлаг.</li>
+        <li>Дильманов С.Д. Исправительно-трудовые лагеря НКВД-МВД СССР на территории Казахстана (30-е – 50-е годы XX века).</li>
+        <li>Кукушкина А.Р. Акмолинский лагерь жен «изменников Родины»: история и судьбы.</li>
+        <li>Калыбекова М.Ч. История депортированных народов Казахстана (1937–1956).</li>
+        <li>Государственный архив Карагандинской области</li>
+        <li>Материалы музеев Карлага и АЛЖИРа</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- 19 · Заключение -->
+<section class="slide dark final" data-title="Заключение" data-n="19">
+  <div class="wrap">
+    <div class="col">
+      <div class="kicker rv">Вместо точки</div>
+      <h2 class="rv" style="--d:1"><em>Заключение</em></h2>
+      <p class="lead rv" style="--d:2">Политические репрессии изменили судьбы тысяч детей, лишив многих из них семьи и привычного детства. В ходе исследования мне удалось восстановить отдельные детские судьбы и маршруты, связанные с Карагандинским регионом. Созданная мной «Цифровая летопись моего края» показывает, что за каждой точкой на карте и каждым маршрутом стоит судьба ребёнка.</p>
+      <div class="row rv" style="--d:3">
+        <button class="btn" data-open-map>Открыть карту</button>
+        <button class="btn ghost" id="toTop">В начало ↑</button>
+      </div>
+      <p class="who rv" style="--d:4"><b>Выполнила:</b> Бартчик Варвара &nbsp;·&nbsp; <b>Научный руководитель:</b> м.г.н., Тобылов А.С.</p>
+    </div>
+    <img class="region rv" style="--d:2" src="img/region.png" alt="Карагандинская область" loading="lazy">
+  </div>
+</section>
+
+</main>
+
+<!-- ============ Карта поверх сайта ============ -->
+<div class="map-ov" id="mapOv" hidden role="dialog" aria-modal="true" aria-label="Интерактивная карта">
+  <div class="load">Загрузка карты…</div>
+  <iframe id="mapFrame" title="Интерактивная карта судеб детей Карлага" allow="clipboard-write"></iframe>
+  <button class="map-close" id="mapClose" aria-label="Закрыть карту">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><span>Закрыть карту</span>
+  </button>
+</div>
+
+<!-- ============ Лайтбокс ============ -->
+<div class="lb" id="lb" hidden><img alt=""><button aria-label="Закрыть">×</button></div>
+
+<script>
+(function(){
+  "use strict";
+  var MAP_URL = "map/index.html";            // <— путь к вашей карте
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var N = slides.length, cur = 0;
+  var root = document.documentElement;
+  var barEl = document.getElementById("bar"), curEl = document.getElementById("cur"), nextBtn = document.getElementById("next"), dotsEl = document.getElementById("dots");
+  function pad(n){ return (n < 10 ? "0" : "") + n; }
+
+  /* точки навигации */
+  slides.forEach(function(s, i){
+    var b = document.createElement("button");
+    b.setAttribute("aria-label", "Слайд " + (i + 1) + ": " + (s.dataset.title || ""));
+    b.innerHTML = "<span>" + pad(i + 1) + " · " + (s.dataset.title || "") + "</span>";
+    b.addEventListener("click", function(){ go(i); });
+    dotsEl.appendChild(b);
+  });
+  var dotBtns = dotsEl.children;
+
+  /* появление блоков */
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    slides.forEach(function(s){ io.observe(s); });
+  } else { slides.forEach(function(s){ s.classList.add("in"); }); }
+
+  /* текущий слайд + прогресс */
+  var ticking = false;
+  function update(){
+    ticking = false;
+    var y = window.scrollY, vh = window.innerHeight, mid = y + vh * 0.4, idx = 0;
+    for (var i = 0; i < N; i++) { if (slides[i].offsetTop <= mid) idx = i; }
+    if (idx !== cur || !dotBtns[idx].classList.contains("on")) {
+      cur = idx;
+      curEl.textContent = pad(idx + 1);
+      for (var k = 0; k < dotBtns.length; k++) dotBtns[k].classList.toggle("on", k === idx);
+    }
+    var max = document.documentElement.scrollHeight - vh;
+    barEl.style.transform = "scaleX(" + (max > 0 ? Math.min(1, y / max) : 0) + ")";
+    nextBtn.classList.toggle("hide", y >= max - 8);
+  }
+  window.addEventListener("scroll", function(){ if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  window.addEventListener("resize", update);
+  update();
+
+  function go(i){
+    i = Math.max(0, Math.min(N - 1, i));
+    slides[i].scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  nextBtn.addEventListener("click", function(){ go(cur + 1); });
+  document.getElementById("toTop").addEventListener("click", function(){ go(0); });
+
+  /* клавиатура: ← → PageUp PageDown Home End */
+  window.addEventListener("keydown", function(e){
+    if (!mapOv.hidden || !lb.hidden) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(N - 1); }
+  });
+
+  /* ---------- карта ---------- */
+  var mapOv = document.getElementById("mapOv"), mapFrame = document.getElementById("mapFrame"), mapClose = document.getElementById("mapClose");
+  var mapOpen = false, pushed = false;
+  function openMap(){
+    if (mapOpen) return;
+    mapOpen = true;
+    if (!mapFrame.getAttribute("src")) mapFrame.setAttribute("src", MAP_URL);
+    mapOv.hidden = false;
+    root.style.overflow = "hidden";
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ mapOv.classList.add("show"); }); });
+    try { history.pushState({ map: 1 }, ""); pushed = true; } catch (e) { pushed = false; }
+  }
+  function hideMap(){
+    if (!mapOpen) return;
+    mapOpen = false;
+    mapOv.classList.remove("show");
+    root.style.overflow = "";
+    setTimeout(function(){ if (!mapOpen) mapOv.hidden = true; }, 280);
+  }
+  var ignorePop = false;
+  function closeMap(){
+    if (!mapOpen) return;
+    hideMap();
+    if (pushed) { pushed = false; ignorePop = true; try { history.back(); } catch (e) { ignorePop = false; } }
+  }
+  window.addEventListener("popstate", function(){
+    if (ignorePop) { ignorePop = false; return; }
+    pushed = false; hideMap();
+  });
+  mapClose.addEventListener("click", closeMap);
+  document.querySelectorAll("[data-open-map]").forEach(function(b){ b.addEventListener("click", openMap); });
+  window.addEventListener("keydown", function(e){ if (e.key === "Escape") { closeMap(); closeLb(); } });
+  /* Esc, нажатый внутри карты, тоже закрывает её окно значка — но не карту целиком; поэтому слушаем и сообщения */
+  window.addEventListener("message", function(e){ if (e.data === "close-map") closeMap(); });
+
+  /* ---------- лайтбокс ---------- */
+  var lb = document.getElementById("lb"), lbImg = lb.querySelector("img");
+  function openLb(src, alt){
+    lbImg.src = src; lbImg.alt = alt || "";
+    lb.hidden = false; root.style.overflow = "hidden";
+    requestAnimationFrame(function(){ lb.classList.add("show"); });
+  }
+  function closeLb(){
+    if (lb.hidden) return;
+    lb.classList.remove("show"); root.style.overflow = mapOpen ? "hidden" : "";
+    setTimeout(function(){ lb.hidden = true; lbImg.removeAttribute("src"); }, 220);
+  }
+  document.addEventListener("click", function(e){
+    var t = e.target;
+    if (t && t.matches && t.matches("img[data-zoom]")) openLb(t.currentSrc || t.src, t.alt);
+  });
+  lb.addEventListener("click", closeLb);
+})();
+</script>
+</body>
+</html>
