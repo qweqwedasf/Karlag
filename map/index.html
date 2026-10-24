@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Карта</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #1b1f27; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overscroll-behavior: none; }
+ 
+  /* Всё, что двигается вместе с картой */
+  #app { position: fixed; inset: 0; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; overflow: hidden; }
+  #app.dragging { cursor: grabbing; }
+  #cv, #arrows { position: absolute; left: 0; top: 0; pointer-events: none; }
+ 
+  /* Значки лежат ОТДЕЛЬНЫМ слоем поверх карты и не масштабируются —
+     поэтому они всегда чёткие, как бы сильно ни приближали карту */
+  #markers { position: absolute; inset: 0; pointer-events: none; overflow: hidden; --sz: 80px; --fs: 16px; }
+  .marker { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+  .marker:hover { z-index: 3; }
+  .pin { position: absolute; width: var(--sz); height: var(--sz); left: calc(var(--sz) / -2); top: calc(var(--sz) / -2); pointer-events: auto; cursor: pointer; }
+  .circle { width: 100%; height: 100%; border-radius: 50%; box-sizing: border-box; border: max(3px, calc(var(--sz) * 0.05)) solid #fff; background: #e63946; box-shadow: 0 3px 10px rgba(0,0,0,.6); overflow: hidden; transition: transform .12s; }
+  .circle img, .cloth img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; -webkit-user-drag: none; }
+  .pin:hover .circle { transform: scale(1.1); }
+ 
+  /* Флажок: древко стоит на координате, полотнище сверху */
+  .pin.flag { pointer-events: none; left: calc(var(--sz) * -0.06); top: calc(var(--sz) * -1); }
+  .flag .pole { position: absolute; left: 0; top: 0; bottom: 0; width: max(4px, calc(var(--sz) * 0.07)); background: #fff; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 3px 8px rgba(0,0,0,.5); pointer-events: auto; }
+  .flag .cloth { position: absolute; left: max(4px, calc(var(--sz) * 0.07)); top: calc(var(--sz) * 0.02); width: calc(var(--sz) * 0.9); height: calc(var(--sz) * 0.58); box-sizing: border-box; border: max(2px, calc(var(--sz) * 0.035)) solid #fff; border-left: 0; border-radius: 0 10px 10px 0; background: #e63946; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,.55); pointer-events: auto; transition: transform .12s; transform-origin: 0 0; }
+  .pin.flag:hover .cloth { transform: scale(1.06); }
+  .pin.flag .label { left: calc(var(--sz) * 0.035); }
+ 
+  /* Некликабельный значок: просто метка, касания проходят сквозь него на карту */
+  .pin.noclick, .pin.noclick * { pointer-events: none !important; cursor: default; }
+  .pin.noclick:hover .circle, .pin.noclick:hover .cloth { transform: none; }
+  .label { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 4px; white-space: nowrap; font-size: var(--fs); font-weight: 700; color: #fff; text-shadow: 0 0 3px #000, 0 0 3px #000, 0 1px 5px #000; pointer-events: none; }
+  .dot { position: absolute; left: -10px; top: -10px; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #fff; background: #00c2ff; box-sizing: border-box; box-shadow: 0 0 6px #000; pointer-events: none; }
+ 
+  /* Кнопки */
+  #ui { position: fixed; right: calc(10px + env(safe-area-inset-right, 0px)); top: calc(10px + env(safe-area-inset-top, 0px)); display: flex; flex-direction: column; gap: 8px; z-index: 5; }
+  #ui button { width: 48px; height: 48px; border-radius: 12px; border: 0; background: rgba(255,255,255,.92); color: #222; font-size: 24px; line-height: 1; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.4); touch-action: manipulation; }
+  #ui button:active { background: #ddd; }
+  #coords { position: fixed; left: calc(10px + env(safe-area-inset-left, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(0,0,0,.75); color: #fff; padding: 8px 12px; border-radius: 10px; font: 600 15px ui-monospace, Consolas, monospace; z-index: 5; display: none; pointer-events: none; }
+ 
+  /* Окно значка: фото слева, текст справа */
+  #popup { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; z-index: 10; }
+  #popup[hidden] { display: none; }
+  .card { position: relative; display: flex; flex-direction: row; background: #fff; color: #222; border-radius: 18px; width: min(960px, 100%); max-height: 88vh; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+  .card.nophoto { width: min(560px, 100%); }
+  .photo { flex: 0 0 46%; background: #111; display: flex; align-items: center; justify-content: center; min-height: 200px; }
+  .card.nophoto .photo { display: none; }
+  .photo img { display: block; max-width: 100%; max-height: 88vh; width: 100%; height: 100%; object-fit: contain; }
+  .body { flex: 1 1 0; min-width: 0; padding: 26px 28px 28px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .body h2 { margin: 0 40px 12px 0; font-size: 26px; line-height: 1.2; }
+  .body p { margin: 0; font-size: 18px; line-height: 1.55; white-space: pre-wrap; }
+  #close { position: absolute; right: 10px; top: 10px; width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; font-size: 24px; line-height: 1; cursor: pointer; z-index: 2; }
+  /* На узком телефоне в вертикальном положении фото и текст рядом не помещаются — ставим друг под другом */
+  @media (max-width: 560px) and (orientation: portrait) {
+    .card { flex-direction: column; }
+    .photo { flex: 0 0 auto; max-height: 42vh; min-height: 0; }
+    .photo img { max-height: 42vh; }
+    .body { padding: 18px 20px 22px; }
+    .body h2 { font-size: 22px; }
+    .body p { font-size: 16px; }
+  }
+ 
+  #error { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; color: #fff; text-align: center; padding: 20px; font-size: 18px; }
+</style>
+</head>
+<body>
+ 
+<div id="app">
+  <canvas id="cv"></canvas>
+  <svg id="arrows"></svg>
+  <div id="markers"></div>
+</div>
+ 
+<div id="ui">
+  <button id="zin" title="Приблизить">+</button>
+  <button id="zout" title="Отдалить">−</button>
+  <button id="rleft" title="Повернуть влево">⟲</button>
+  <button id="rright" title="Повернуть вправо">⟳</button>
+  <button id="reset" title="Вернуть вид">⌂</button>
+</div>
+<div id="coords"></div>
+ 
+<div id="popup" hidden>
+  <div class="card" id="card">
+    <button id="close" aria-label="Закрыть">×</button>
+    <div class="photo"><img id="pphoto" alt=""></div>
+    <div class="body"><h2 id="ptitle"></h2><p id="ptext"></p></div>
+  </div>
+</div>
+ 
+<div id="error"></div>
+ 
+<!-- Файл данных: здесь все значки и настройки -->
+<script src="data.js"></script>
+<script>
+(function () {
+  "use strict";
+ 
+  var errBox = document.getElementById("error");
+  if (typeof show === "undefined" || typeof markers === "undefined") {
+    errBox.style.display = "flex";
+    errBox.textContent = "Не удалось прочитать data.js. Проверь, что файл лежит рядом с index.html и в нём нет опечаток.";
+    return;
+  }
+  var GRID_ON = !!show;
+  var USER_STEP = (typeof gridStep !== "undefined" && gridStep > 0) ? gridStep : 0;
+  var MAP_SRC = (typeof mapImage !== "undefined") ? mapImage : "map.jpg";
+  var ICON = (typeof iconSize !== "undefined" && iconSize > 0) ? iconSize : 80;
+  var GROW = (typeof iconsGrowWithZoom !== "undefined") ? !!iconsGrowWithZoom : false;
+ 
+  var app = document.getElementById("app");
+  var cv = document.getElementById("cv");
+  var ctx = cv.getContext("2d");
+  var arrowsSvg = document.getElementById("arrows");
+  var markersEl = document.getElementById("markers");
+  var coordsBox = document.getElementById("coords");
+ 
+  var W = 2000, H = 1500;               // размер карты — обновится по картинке
+  var STEP = 100;
+  var vw = 0, vh = 0, dpr = 1;
+  var view = { tx: 0, ty: 0, s: 1, a: 0 };
+  var fitScale = 1, minS = 0.1, maxS = 10;
+  var dirty = true, lastSize = -1;
+ 
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+ 
+  // ---------- шаг сетки: сам подбирается под размер карты ----------
+  function setupGrid() {
+    if (USER_STEP) { STEP = USER_STEP; return; }
+    var raw = Math.max(W, H) / 10;
+    var base = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10));
+    var n = raw / base;
+    var mult = n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10;
+    STEP = Math.max(1, mult * base);
+  }
+ 
+  // ---------- картинка карты ----------
+  var mapImg = new Image();
+  var imgOK = false;
+  mapImg.decoding = "async";
+  mapImg.onload = function () {
+    imgOK = true;
+    W = mapImg.naturalWidth; H = mapImg.naturalHeight;
+    setupGrid(); resetView();
+  };
+  mapImg.onerror = function () { console.warn("Не найдена картинка карты: " + MAP_SRC); };
+  mapImg.src = MAP_SRC;
+  setupGrid();
+ 
+  // ---------- значки ----------
+  var byKey = new Map();
+  var items = [];                         // {m, wrap}
+  markers.forEach(function (m) {
+    var wrap = document.createElement("div");
+    wrap.className = "marker";
+    var isFlag = (m.flag === true);
+    var isClickable = (m.clickable !== false);
+    var pin = document.createElement("div");
+    pin.className = "pin" + (isFlag ? " flag" : "") + (isClickable ? "" : " noclick");
+    var body = document.createElement("div");           // круг или полотнище флажка
+    body.className = isFlag ? "cloth" : "circle";
+    if (m.icon) {
+      var im = new Image();
+      im.draggable = false;
+      im.decoding = "async";
+      im.onerror = function () { im.remove(); };
+      im.src = m.icon;
+      body.appendChild(im);
+    }
+    var label = document.createElement("div");
+    label.className = "label";
+    label.textContent = m.name || "";
+    if (isFlag) {
+      var pole = document.createElement("div");
+      pole.className = "pole";
+      pin.appendChild(pole);
+    }
+    pin.appendChild(body); pin.appendChild(label);
+    wrap.appendChild(pin); markersEl.appendChild(wrap);
+    if (isClickable) pin._m = m;
+    items.push({ m: m, wrap: wrap });
+    if (m.id !== undefined && m.id !== null && m.id !== "") byKey.set(String(m.id).trim().toLowerCase(), m);
+  });
+  markers.forEach(function (m) {
+    var k = String(m.name || "").trim().toLowerCase();
+    if (k && !byKey.has(k)) byKey.set(k, m);
+  });
+ 
+  // ---------- стрелки ----------
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var conns = [];
+  markers.forEach(function (m) {
+    var list = Array.isArray(m.connect) ? m.connect : (m.connect ? [m.connect] : []);
+    list.forEach(function (ref) {
+      var t = byKey.get(String(ref).trim().toLowerCase());
+      if (!t) { console.warn("Значок «" + m.name + "»: не найден значок для связи «" + ref + "»"); return; }
+      var g = document.createElementNS(SVGNS, "g");
+      var l1 = document.createElementNS(SVGNS, "line");
+      var l2 = document.createElementNS(SVGNS, "line");
+      var poly = document.createElementNS(SVGNS, "polygon");
+      l1.setAttribute("stroke", "#fff"); l1.setAttribute("stroke-linecap", "round");
+      l2.setAttribute("stroke", "#e63946"); l2.setAttribute("stroke-linecap", "round");
+      poly.setAttribute("fill", "#e63946"); poly.setAttribute("stroke", "#fff"); poly.setAttribute("stroke-linejoin", "round");
+      g.appendChild(l1); g.appendChild(l2); g.appendChild(poly);
+      arrowsSvg.appendChild(g);
+      conns.push({ from: m, to: t, g: g, l1: l1, l2: l2, poly: poly });
+    });
+  });
+ 
+  // ---------- метка нажатия (для координат) ----------
+  var tapWrap = document.createElement("div");
+  tapWrap.className = "marker";
+  tapWrap.style.display = "none";
+  var tapDot = document.createElement("div");
+  tapDot.className = "dot";
+  tapWrap.appendChild(tapDot); markersEl.appendChild(tapWrap);
+  var tapPos = null;
+  if (GRID_ON) coordsBox.style.display = "block";
+  coordsBox.textContent = "x: –, y: –";
+ 
+  // ---------- геометрия ----------
+  function toScreen(x, y) {
+    var c = Math.cos(view.a), s = Math.sin(view.a), k = view.s;
+    return { x: view.tx + k * (c * x - s * y), y: view.ty + k * (s * x + c * y) };
+  }
+  function toWorld(px, py) {
+    var dx = px - view.tx, dy = py - view.ty;
+    var c = Math.cos(-view.a), s = Math.sin(-view.a);
+    return { x: (c * dx - s * dy) / view.s, y: (s * dx + c * dy) / view.s };
+  }
+  function zoomRotateAbout(px, py, k, da) {
+    var ns = clamp(view.s * k, minS, maxS);
+    k = ns / view.s;
+    var vx = px - view.tx, vy = py - view.ty;
+    var c = Math.cos(da), s = Math.sin(da);
+    var rx = vx * c - vy * s, ry = vx * s + vy * c;
+    view.tx = px - k * rx; view.ty = py - k * ry;
+    view.s = ns; view.a += da;
+    dirty = true;
+  }
+  function panBy(dx, dy) { view.tx += dx; view.ty += dy; dirty = true; }
+ 
+  function resetView() {
+    fitScale = Math.min(vw / W, vh / H) * 0.95;
+    if (!isFinite(fitScale) || fitScale <= 0) fitScale = 1;
+    minS = fitScale * 0.3;
+    maxS = Math.max(fitScale * 40, 4);
+    view.s = fitScale; view.a = 0;
+    view.tx = (vw - W * fitScale) / 2;
+    view.ty = (vh - H * fitScale) / 2;
+    dirty = true;
+  }
+ 
+  function resize() {
+    vw = window.innerWidth; vh = window.innerHeight;
+    dpr = window.devicePixelRatio || 1;
+    cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr);
+    cv.style.width = vw + "px"; cv.style.height = vh + "px";
+    arrowsSvg.setAttribute("width", vw); arrowsSvg.setAttribute("height", vh);
+    arrowsSvg.setAttribute("viewBox", "0 0 " + vw + " " + vh);
+    minS = fitScale * 0.3;
+    dirty = true;
+  }
+  window.addEventListener("resize", resize);
+  resize(); resetView();
+ 
+  // ---------- отрисовка ----------
+  function drawGrid() {
+    if (!GRID_ON) return;
+    var m = 1;
+    while (STEP * m * view.s < 80) m *= 2;
+    var st = STEP * m;
+    function line(x1, y1, x2, y2) {
+      var a = toScreen(x1, y1), b = toScreen(x2, y2);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    }
+    var x, y;
+    for (x = 0; x <= W; x += st) {
+      var major = Math.round(x / st) % 5 === 0;
+      ctx.strokeStyle = major ? "rgba(255,230,0,.95)" : "rgba(255,230,0,.5)";
+      ctx.lineWidth = major ? 1.6 : 1;
+      line(x, 0, x, H);
+    }
+    for (y = 0; y <= H; y += st) {
+      var majorY = Math.round(y / st) % 5 === 0;
+      ctx.strokeStyle = majorY ? "rgba(255,230,0,.95)" : "rgba(255,230,0,.5)";
+      ctx.lineWidth = majorY ? 1.6 : 1;
+      line(0, y, W, y);
+    }
+    // рамка карты
+    ctx.strokeStyle = "rgba(0,200,255,.95)"; ctx.lineWidth = 2;
+    var c0 = toScreen(0, 0), c1 = toScreen(W, 0), c2 = toScreen(W, H), c3 = toScreen(0, H);
+    ctx.beginPath(); ctx.moveTo(c0.x, c0.y); ctx.lineTo(c1.x, c1.y); ctx.lineTo(c2.x, c2.y); ctx.lineTo(c3.x, c3.y); ctx.closePath(); ctx.stroke();
+    // подписи координат в пересечениях
+    ctx.font = "600 12px ui-monospace, Consolas, monospace";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.lineJoin = "round"; ctx.lineWidth = 3; ctx.strokeStyle = "rgba(0,0,0,.85)"; ctx.fillStyle = "#fff";
+    for (x = 0; x <= W; x += st) {
+      for (y = 0; y <= H; y += st) {
+        var p = toScreen(x, y);
+        if (p.x < -50 || p.x > vw + 50 || p.y < -10 || p.y > vh + 10) continue;
+        var t = Math.round(x) + "," + Math.round(y);
+        ctx.strokeText(t, p.x, p.y); ctx.fillText(t, p.x, p.y);
+      }
+    }
+  }
+ 
+  function drawCanvas() {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = "#1b1f27";
+    ctx.fillRect(0, 0, vw, vh);
+    ctx.save();
+    ctx.translate(view.tx, view.ty); ctx.rotate(view.a); ctx.scale(view.s, view.s);
+    if (imgOK) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(mapImg, 0, 0);
+    } else {
+      ctx.fillStyle = "#2b313c";
+      ctx.fillRect(0, 0, W, H);
+    }
+    ctx.restore();
+    drawGrid();
+  }
+ 
+  function snap(v) { return Math.round(v * dpr) / dpr; }   // по целым пикселям экрана — чётче
+ 
+  function placeMarkers(size) {
+    var lim = size * 1.5;
+    items.forEach(function (it) {
+      var p = toScreen(it.m.x, it.m.y);
+      if (p.x < -lim || p.x > vw + lim || p.y < -lim || p.y > vh + lim) { it.wrap.style.display = "none"; return; }
+      it.wrap.style.display = "";
+      it.wrap.style.transform = "translate(" + snap(p.x) + "px," + snap(p.y) + "px)";
+    });
+    if (tapPos) {
+      var q = toScreen(tapPos.x, tapPos.y);
+      tapWrap.style.display = "";
+      tapWrap.style.transform = "translate(" + snap(q.x) + "px," + snap(q.y) + "px)";
+    }
+  }
+ 
+  // Куда на экране крепится стрелка: у круга — в центр, у флажка — в середину флажка
+  function anchor(m, size) {
+    var p = toScreen(m.x, m.y);
+    if (m.flag === true) { p.x += size * 0.3; p.y -= size * 0.5; }
+    return p;
+  }
+ 
+  function drawArrows(size) {
+    var k = size / 80;
+    var R = size / 2 + 6 * k, HEAD = 22 * k, HW = 10 * k;
+    conns.forEach(function (c) {
+      var p1 = anchor(c.from, size), p2 = anchor(c.to, size);
+      var dx = p2.x - p1.x, dy = p2.y - p1.y, len = Math.sqrt(dx * dx + dy * dy);
+      if (len < 2 * R + HEAD + 4) { c.g.style.display = "none"; return; }
+      c.g.style.display = "";
+      var ux = dx / len, uy = dy / len, nx = -uy, ny = ux;
+      var sx = p1.x + ux * R, sy = p1.y + uy * R;
+      var ex = p2.x - ux * R, ey = p2.y - uy * R;
+      var bx = ex - ux * HEAD, by = ey - uy * HEAD;
+      c.l1.setAttribute("stroke-width", 9 * k); c.l2.setAttribute("stroke-width", 5 * k);
+      c.poly.setAttribute("stroke-width", 2.5 * k);
+      [c.l1, c.l2].forEach(function (l) {
+        l.setAttribute("x1", sx); l.setAttribute("y1", sy);
+        l.setAttribute("x2", bx); l.setAttribute("y2", by);
+      });
+      c.poly.setAttribute("points",
+        ex + "," + ey + " " + (bx + nx * HW) + "," + (by + ny * HW) + " " + (bx - nx * HW) + "," + (by - ny * HW));
+    });
+  }
+ 
+  function render() {
+    dirty = false;
+    var factor = GROW ? clamp(view.s / fitScale, 0.5, 3) : 1;
+    var size = ICON * factor;
+    if (size !== lastSize) {
+      markersEl.style.setProperty("--sz", size + "px");
+      markersEl.style.setProperty("--fs", Math.max(13, size * 0.2) + "px");
+      lastSize = size;
+    }
+    drawCanvas();
+    placeMarkers(size);
+    drawArrows(size);
+  }
+  (function loop() { if (dirty) render(); requestAnimationFrame(loop); })();
+ 
+  // ---------- координаты ----------
+  function showCoords(px, py, mark) {
+    if (!GRID_ON) return;
+    var w = toWorld(px, py);
+    var x = Math.round(w.x), y = Math.round(w.y);
+    var txt = "x: " + x + ", y: " + y;
+    coordsBox.textContent = txt;
+    if (mark) {
+      tapPos = { x: x, y: y }; dirty = true;
+      try { if (navigator.clipboard) navigator.clipboard.writeText(txt).catch(function () {}); } catch (e) {}
+      coordsBox.textContent = txt + "  ✓";
+    }
+  }
+ 
+  // ---------- всплывающее окно ----------
+  var popup = document.getElementById("popup");
+  var card = document.getElementById("card");
+  var pphoto = document.getElementById("pphoto");
+  var ptitle = document.getElementById("ptitle");
+  var ptext = document.getElementById("ptext");
+  function openPopup(m) {
+    ptitle.textContent = m.name || "";
+    ptext.textContent = m.description || "";
+    ptext.style.display = m.description ? "" : "none";
+    if (m.photo) {
+      card.classList.remove("nophoto");
+      pphoto.onerror = function () { card.classList.add("nophoto"); };
+      pphoto.src = m.photo;
+    } else {
+      card.classList.add("nophoto");
+      pphoto.removeAttribute("src");
+    }
+    popup.hidden = false;
+    card.querySelector(".body").scrollTop = 0;
+  }
+  function closePopup() { popup.hidden = true; }
+  document.getElementById("close").addEventListener("click", closePopup);
+  popup.addEventListener("click", function (e) { if (e.target === popup) closePopup(); });
+ 
+  // ---------- управление: касания и мышь ----------
+  var ptrs = new Map();
+  var down = null;
+  var pinch = null;
+ 
+  function pinchInfo() {
+    var a = Array.from(ptrs.values());
+    var dx = a[1].x - a[0].x, dy = a[1].y - a[0].y;
+    return { cx: (a[0].x + a[1].x) / 2, cy: (a[0].y + a[1].y) / 2, d: Math.max(Math.hypot(dx, dy), 1), ang: Math.atan2(dy, dx) };
+  }
+ 
+  app.addEventListener("pointerdown", function (e) {
+    if (e.pointerType === "mouse" && e.button !== 0 && e.button !== 2) return;
+    try { app.setPointerCapture(e.pointerId); } catch (err) {}
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (ptrs.size === 1) {
+      down = { sx: e.clientX, sy: e.clientY, lx: e.clientX, ly: e.clientY, moved: false, target: e.target,
+               rot: (e.pointerType === "mouse" && (e.button === 2 || e.altKey)) };
+      app.classList.add("dragging");
+    } else if (ptrs.size === 2) {
+      if (down) down.moved = true;
+      pinch = pinchInfo();
+    }
+  });
+ 
+  app.addEventListener("pointermove", function (e) {
+    if (e.pointerType === "mouse" && !ptrs.size) showCoords(e.clientX, e.clientY, false);
+    if (!ptrs.has(e.pointerId)) return;
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (ptrs.size === 1 && down) {
+      if (!down.moved && Math.hypot(e.clientX - down.sx, e.clientY - down.sy) > 8) down.moved = true;
+      if (down.moved) {
+        if (down.rot) {
+          var cx = vw / 2, cy = vh / 2;
+          var a0 = Math.atan2(down.ly - cy, down.lx - cx), a1 = Math.atan2(e.clientY - cy, e.clientX - cx);
+          var da = a1 - a0;
+          if (da > Math.PI) da -= 2 * Math.PI; else if (da < -Math.PI) da += 2 * Math.PI;
+          zoomRotateAbout(cx, cy, 1, da);
+        } else {
+          panBy(e.clientX - down.lx, e.clientY - down.ly);
+        }
+      }
+      down.lx = e.clientX; down.ly = e.clientY;
+      if (e.pointerType === "mouse") showCoords(e.clientX, e.clientY, false);
+    } else if (ptrs.size === 2 && pinch) {
+      var cur = pinchInfo();
+      var da2 = cur.ang - pinch.ang;
+      if (da2 > Math.PI) da2 -= 2 * Math.PI; else if (da2 < -Math.PI) da2 += 2 * Math.PI;
+      zoomRotateAbout(pinch.cx, pinch.cy, cur.d / pinch.d, da2);
+      panBy(cur.cx - pinch.cx, cur.cy - pinch.cy);
+      pinch = cur;
+    }
+  });
+ 
+  function endPointer(e) {
+    if (!ptrs.has(e.pointerId)) return;
+    var wasSingle = (ptrs.size === 1);
+    ptrs.delete(e.pointerId);
+    if (wasSingle && down) {
+      if (e.type === "pointerup" && !down.moved) {
+        var pin = down.target && down.target.closest ? down.target.closest(".pin") : null;
+        if (pin && pin._m) openPopup(pin._m);
+        else showCoords(e.clientX, e.clientY, true);
+      }
+      down = null;
+      app.classList.remove("dragging");
+    } else if (ptrs.size === 1) {
+      var rest = Array.from(ptrs.values())[0];
+      down = { sx: rest.x, sy: rest.y, lx: rest.x, ly: rest.y, moved: true, target: null, rot: false };
+      pinch = null;
+    } else if (ptrs.size === 0) {
+      down = null; pinch = null;
+      app.classList.remove("dragging");
+    }
+  }
+  app.addEventListener("pointerup", endPointer);
+  app.addEventListener("pointercancel", endPointer);
+  app.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  document.addEventListener("gesturestart", function (e) { e.preventDefault(); });
+ 
+  // колесо мыши: зум; Shift + колесо: поворот; щипок на тачпаде (Ctrl) — зум
+  app.addEventListener("wheel", function (e) {
+    e.preventDefault();
+    var dy = e.deltaY;
+    if (e.deltaMode === 1) dy *= 16;
+    if (e.shiftKey) {
+      zoomRotateAbout(e.clientX, e.clientY, 1, dy * 0.003);
+    } else {
+      var speed = e.ctrlKey ? 0.01 : 0.0015;
+      zoomRotateAbout(e.clientX, e.clientY, Math.exp(-dy * speed), 0);
+    }
+    showCoords(e.clientX, e.clientY, false);
+  }, { passive: false });
+ 
+  // кнопки
+  function center(fn) { fn(vw / 2, vh / 2); }
+  document.getElementById("zin").addEventListener("click", function () { center(function (x, y) { zoomRotateAbout(x, y, 1.4, 0); }); });
+  document.getElementById("zout").addEventListener("click", function () { center(function (x, y) { zoomRotateAbout(x, y, 1 / 1.4, 0); }); });
+  document.getElementById("rleft").addEventListener("click", function () { center(function (x, y) { zoomRotateAbout(x, y, 1, -Math.PI / 12); }); });
+  document.getElementById("rright").addEventListener("click", function () { center(function (x, y) { zoomRotateAbout(x, y, 1, Math.PI / 12); }); });
+  document.getElementById("reset").addEventListener("click", resetView);
+ 
+  // клавиатура
+  window.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (k === "Escape") { if (popup.hidden) { try { parent.postMessage("close-map", "*"); } catch (err) {} } closePopup(); return; }
+    if (!popup.hidden) return;
+    if (k === "+" || k === "=") center(function (x, y) { zoomRotateAbout(x, y, 1.2, 0); });
+    else if (k === "-" || k === "_") center(function (x, y) { zoomRotateAbout(x, y, 1 / 1.2, 0); });
+    else if (k === "q" || k === "Q" || k === "й" || k === "Й") center(function (x, y) { zoomRotateAbout(x, y, 1, -0.1); });
+    else if (k === "e" || k === "E" || k === "у" || k === "У") center(function (x, y) { zoomRotateAbout(x, y, 1, 0.1); });
+    else if (k === "ArrowLeft") panBy(50, 0);
+    else if (k === "ArrowRight") panBy(-50, 0);
+    else if (k === "ArrowUp") panBy(0, 50);
+    else if (k === "ArrowDown") panBy(0, -50);
+    else if (k === "0") resetView();
+  });
+})();
+</script>
+</body>
+</html>
