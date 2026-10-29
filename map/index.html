@@ -27,6 +27,7 @@
   .flag .pole { position: absolute; left: 0; top: 0; bottom: 0; width: max(4px, calc(var(--sz) * 0.07)); background: #fff; border-radius: 3px; box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 3px 8px rgba(0,0,0,.5); pointer-events: auto; }
   .flag .cloth { position: absolute; left: max(4px, calc(var(--sz) * 0.07)); top: calc(var(--sz) * 0.02); width: calc(var(--sz) * 0.9); height: calc(var(--sz) * 0.58); box-sizing: border-box; border: max(2px, calc(var(--sz) * 0.035)) solid #fff; border-left: 0; border-radius: 0 10px 10px 0; background: #e63946; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,.55); pointer-events: auto; transition: transform .12s; transform-origin: 0 0; }
   .pin.flag:hover .cloth { transform: scale(1.06); }
+  .cloth .num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: calc(var(--sz) * 0.36); line-height: 1; color: #fff; text-shadow: 0 0 3px #000, 0 0 3px #000, 0 0 6px #000, 0 1px 4px #000; pointer-events: none; }
   .pin.flag .label { left: calc(var(--sz) * 0.035); }
  
   /* Некликабельный значок: просто метка, касания проходят сквозь него на карту */
@@ -46,21 +47,35 @@
   #popup[hidden] { display: none; }
   .card { position: relative; display: flex; flex-direction: row; background: #fff; color: #222; border-radius: 18px; width: min(960px, 100%); max-height: 88vh; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
   .card.nophoto { width: min(560px, 100%); }
-  .photo { flex: 0 0 46%; background: #111; display: flex; align-items: center; justify-content: center; min-height: 200px; }
+  .photo { flex: 0 0 46%; background: #111; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; }
   .card.nophoto .photo { display: none; }
-  .photo img { display: block; max-width: 100%; max-height: 88vh; width: 100%; height: 100%; object-fit: contain; }
+  .photo img { display: block; max-width: 100%; max-height: 88vh; width: 100%; height: 100%; object-fit: contain; min-height: 0; flex: 1 1 auto; }
+  .card.hascap .photo img { max-height: calc(88vh - 110px); }
+  .caption { flex: 0 0 auto; width: 100%; box-sizing: border-box; padding: 10px 16px 12px; background: #111; color: #ddd; font-size: 15px; line-height: 1.4; text-align: center; white-space: pre-wrap; overflow-y: auto; max-height: 110px; }
+  .caption[hidden] { display: none; }
   .body { flex: 1 1 0; min-width: 0; padding: 26px 28px 28px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .body h2 { margin: 0 40px 12px 0; font-size: 26px; line-height: 1.2; }
   .body p { margin: 0; font-size: 18px; line-height: 1.55; white-space: pre-wrap; }
+  .tablewrap { margin-top: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tablewrap[hidden] { display: none; }
+  .tablewrap table { border-collapse: collapse; width: 100%; font-size: 16px; line-height: 1.4; }
+  .tablewrap th, .tablewrap td { border: 1px solid #ccc; padding: 8px 10px; text-align: left; vertical-align: top; white-space: pre-wrap; }
+  .tablewrap th { background: #f0f0f0; font-weight: 700; }
+  .tablenote { margin-top: 8px; font-size: 14px; line-height: 1.4; color: #555; white-space: pre-wrap; }
+  .tablewrap tr:nth-child(even) td { background: #fafafa; }
   #close { position: absolute; right: 10px; top: 10px; width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; font-size: 24px; line-height: 1; cursor: pointer; z-index: 2; }
   /* На узком телефоне в вертикальном положении фото и текст рядом не помещаются — ставим друг под другом */
   @media (max-width: 560px) and (orientation: portrait) {
     .card { flex-direction: column; }
-    .photo { flex: 0 0 auto; max-height: 42vh; min-height: 0; }
-    .photo img { max-height: 42vh; }
+    .photo { flex: 0 0 auto; min-height: 0; }
+    .photo img { max-height: 42vh; height: auto; }
+    .card.hascap .photo img { max-height: 36vh; }
+    .caption { font-size: 14px; max-height: 90px; }
     .body { padding: 18px 20px 22px; }
     .body h2 { font-size: 22px; }
     .body p { font-size: 16px; }
+    .tablewrap table { font-size: 14px; }
+    .tablewrap th, .tablewrap td { padding: 6px 7px; }
   }
  
   #error { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; color: #fff; text-align: center; padding: 20px; font-size: 18px; }
@@ -86,8 +101,8 @@
 <div id="popup" hidden>
   <div class="card" id="card">
     <button id="close" aria-label="Закрыть">×</button>
-    <div class="photo"><img id="pphoto" alt=""></div>
-    <div class="body"><h2 id="ptitle"></h2><p id="ptext"></p></div>
+    <div class="photo"><img id="pphoto" alt=""><div class="caption" id="pcaption" hidden></div></div>
+    <div class="body"><h2 id="ptitle"></h2><p id="ptext"></p><div class="tablewrap" id="ptable" hidden></div></div>
   </div>
 </div>
  
@@ -153,6 +168,7 @@
   // ---------- значки ----------
   var byKey = new Map();
   var items = [];                         // {m, wrap}
+  var flagCounter = 0;                    // автонумерация флажков
   markers.forEach(function (m) {
     var wrap = document.createElement("div");
     wrap.className = "marker";
@@ -174,6 +190,14 @@
     label.className = "label";
     label.textContent = m.name || "";
     if (isFlag) {
+      flagCounter++;
+      var numVal = (m.number !== undefined && m.number !== null) ? String(m.number) : String(flagCounter);
+      if (numVal !== "") {
+        var num = document.createElement("div");
+        num.className = "num";
+        num.textContent = numVal;
+        body.appendChild(num);
+      }
       var pole = document.createElement("div");
       pole.className = "pole";
       pin.appendChild(pole);
@@ -408,10 +432,39 @@
   var pphoto = document.getElementById("pphoto");
   var ptitle = document.getElementById("ptitle");
   var ptext = document.getElementById("ptext");
+  var ptable = document.getElementById("ptable");
+  var pcaption = document.getElementById("pcaption");
   function openPopup(m) {
     ptitle.textContent = m.name || "";
     ptext.textContent = m.description || "";
     ptext.style.display = m.description ? "" : "none";
+    ptable.innerHTML = "";
+    var rows = Array.isArray(m.table) ? m.table : [];
+    if (rows.length) {
+      var tb = document.createElement("table");
+      rows.forEach(function (row, ri) {
+        var tr = document.createElement("tr");
+        (Array.isArray(row) ? row : [row]).forEach(function (cell) {
+          var td = document.createElement((ri === 0 && m.tableHeader !== false) ? "th" : "td");
+          td.textContent = (cell === undefined || cell === null) ? "" : String(cell);
+          tr.appendChild(td);
+        });
+        tb.appendChild(tr);
+      });
+      ptable.appendChild(tb);
+      if (m.tableNote) {
+        var tn = document.createElement("div");
+        tn.className = "tablenote";
+        tn.textContent = m.tableNote;
+        ptable.appendChild(tn);
+      }
+      ptable.hidden = false;
+    } else {
+      ptable.hidden = true;
+    }
+    pcaption.textContent = m.caption || "";
+    pcaption.hidden = !m.caption;
+    card.classList.toggle("hascap", !!(m.photo && m.caption));
     if (m.photo) {
       card.classList.remove("nophoto");
       pphoto.onerror = function () { card.classList.add("nophoto"); };
