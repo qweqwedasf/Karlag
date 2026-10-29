@@ -148,7 +148,7 @@ h2 em{font-style:italic;color:var(--rust)}
 @media (max-width:480px){.methods{grid-template-columns:1fr}}
 .pair{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start}
 .pair .photo:nth-child(2){margin-top:34px}
-.call{margin-top:16px;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);border:1px solid rgba(0,0,0,.08)}
+.call{display:block;width:100%;height:auto;background:#000;margin-top:16px;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);border:1px solid rgba(0,0,0,.08)}
 
 /* ---------- вопрос ---------- */
 .q h2{text-align:center;max-width:960px;margin-inline:auto;font-size:clamp(1.5rem,3.6vw,2.7rem);line-height:1.2;font-weight:500;font-style:italic}
@@ -307,7 +307,7 @@ table.t tbody tr:nth-child(even){background:rgba(199,154,82,.14)}
   <div class="wrap">
     <div class="col">
       <div class="kicker rv">Что мы хотим узнать</div>
-      <h2 class="rv" style="--d:1">Цель и <em>задачи</em> исследования</h2>
+      <h2 class="rv" style="--d:1">Цель и задачи исследования</h2>
       <p class="goal rv" style="--d:2">Восстановить и визуализировать маршруты судеб детей, пострадавших от политических репрессий, на территории Карагандинского региона.</p>
       <ol class="tasks rv" style="--d:3">
         <li>Изучить исторические источники о судьбах детей репрессированных.</li>
@@ -332,7 +332,7 @@ table.t tbody tr:nth-child(even){background:rgba(199,154,82,.14)}
         <figure class="photo nocap" style="--r:-1.5deg"><img src="img/m1.jpg" alt="За работой над исследованием" data-zoom loading="lazy"></figure>
         <figure class="photo nocap" style="--r:1.6deg"><img src="img/m2.jpg" alt="Работа с книгой" data-zoom loading="lazy"></figure>
       </div>
-      <img class="call" src="img/call.png" alt="Скриншот звонка — интервью" data-zoom loading="lazy">
+      <video class="call" src="img/video.mp4" controls playsinline preload="metadata" title="Интервью"></video>
     </div>
     <div class="col">
       <div class="kicker rv">Как мы работали</div>
@@ -390,184 +390,8 @@ table.t tbody tr:nth-child(even){background:rgba(199,154,82,.14)}
   </div>
 </section>
 
-<!-- 8 · Воспоминания (точка №1) -->
-<section class="slide light" data-title="Воспоминания Зибы" data-n="08">
-  <div class="wrap rev">
-    <figure class="photo sm rv" style="--d:1;--r:-2deg">
-      <img src="img/book.jpg" alt="Обложка «Страницы трагических судеб»" data-zoom loading="lazy">
-    </figure>
-    <div class="col">
-      <div class="kicker rv">Точка №1 · Голос очевидца</div>
-      <blockquote class="big rv" style="--d:1">После ареста отца меня и подобных мне исключили из пионеров, так как мы, дети «врагов народа», не имели права носить пионерские галстуки. Наши сверстники стали сторониться нас. Мы были, как белые вороны. Подобное происходило и среди комсомольцев. Но все это было цветочками. Спустя некоторое время арестовали и маму, а нас, детей, отправили в детдом. Но родственники, узнав о случившемся, выкрали меня и моего брата Арыстана из детского дома и увезли в родной аул моего отца. Спасибо людям за то, что жалели нас и не дали погибнуть!»
-        <span class="by">Из воспоминаний дочери К. Кожановой Зибы</span></blockquote>
-      <button class="chip rv" style="--d:2" data-open-map><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/></svg>Показать на карте</button>
-    </div>
-  </div>
-</section>
-
-<!-- 9 · Детприёмник (точка №2) -->
-<section class="slide dark" data-title="Детприёмник НКВД" data-n="09">
-  <div class="wrap">
-    <div class="col">
-      <div class="kicker rv">Точка №2 · Майкудук</div>
-      <h2 class="rv" style="--d:1">Пункт приёма: <em>детприёмник НКВД</em></h2>
-      <p class="lead rv" style="--d:2">В каждом городе, где осуществлялись процессы перемещения детей, были специально оборудованы пункты приема и распределения, куда детей доставляли сразу после ареста матерей. На территории Карагандинской области имелся единственный детприемник НКВД, откуда дети репрессированных отправлялись по детским домам области. Детприемник НКВД находился в поселке Майкудук.</p>
-      <p class="src rv" style="--d:3">ГАКО. Ф.664. Оп.1. Д.36.</p>
-      <button class="chip rv" style="--d:3" data-open-map><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/></svg>Показать на карте</button>
-    </div>
-    <figure class="photo sm rv" style="--d:2;--r:1.5deg">
-      <img src="img/museum.jpg" alt="Экспозиция музея: дети репрессированных" data-zoom loading="lazy">
-    </figure>
-  </div>
-</section>
-
-<!-- 10 · Осакаровские детдома (точка №3) -->
-<section class="slide light" data-title="Осакаровские детские дома" data-n="10">
-  <div class="wrap rev">
-    <figure class="photo sm rv" style="--d:2;--r:-1.5deg">
-      <img src="img/doc.jpg" alt="Документ из фондов музея «АЛЖИР»" data-zoom loading="lazy">
-      <figcaption>Осакаровские детские дома №5 и №9<span>(Пионерский и Литвинский)</span></figcaption>
-    </figure>
-    <div class="col">
-      <div class="kicker rv">Точка №3 · Осакаровский район</div>
-      <h2 class="rv" style="--d:1">Осакаровские <em>детские дома</em> №5 и №9</h2>
-      <p class="txt rv" style="--d:2">В отличие от других домов младенца женщины Акмолинского лагеря знали, что их дети направляются в Осакаровский детский дом. Это подтверждает и М.Т. Юзипенко:</p>
-      <blockquote class="quote rv" style="--d:2">«В Акмолинском лагере находилось 400 детей, но вся беда в том, что, когда ребенок достигал четырехлетнего возраста, его отправляли в Осакаровский детский дом».</blockquote>
-      <p class="src rv" style="--d:3">Музейно-мемориальный комплекс жертв политических репрессий и тоталитаризма «АЛЖИР», ПМОФ-3021</p>
-      <button class="chip rv" style="--d:3" data-open-map><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/></svg>Показать на карте</button>
-    </div>
-  </div>
-</section>
-
-<!-- 11 · Пионерский детдом -->
-<section class="slide dark" data-title="Пионерский детский дом" data-n="11">
-  <div class="wrap">
-    <div class="col">
-      <div class="kicker rv">Детский дом №9</div>
-      <h2 class="rv" style="--d:1"><em>Пионерский</em> детский дом</h2>
-      <p class="lead rv" style="--d:2">Пионерский детский дом поселка № 9 Осакаровского района Карагандинской области был основан в октябре 1935 года и первоначально находился в ведении спецкомендатуры. Организован он был изначально для детей спецпереселенцев умерших при этапировании к местам высылки, а также скончавшихся от болезней в первые годы основания села.</p>
-    </div>
-    <figure class="photo rv" style="--d:2;--r:1deg">
-      <img src="img/plan.jpg" alt="Схематический план территории детдома" data-zoom loading="lazy">
-      <figcaption>Схематический план территории детдома</figcaption>
-    </figure>
-  </div>
-</section>
-
-<!-- 12 · Литвинский детдом -->
-<section class="slide light" data-title="Литвинский детский дом" data-n="12">
-  <div class="wrap rev">
-    <figure class="photo sm rv" style="--d:2;--r:-1.2deg">
-      <img src="img/school.jpg" alt="Школа-интернат-колледж Осакаровского района" data-zoom loading="lazy">
-      <figcaption>Школа-интернат-колледж Осакаровского района</figcaption>
-    </figure>
-    <div class="col">
-      <div class="kicker rv">Детский дом №5</div>
-      <h2 class="rv" style="--d:1"><em>Литвинский</em> детский дом</h2>
-      <p class="lead rv" style="--d:2">Недалеко от районного центра Осакаровка находится поселок Есиль — прежнее название Литвинское, заселенное в 30-е годы спецпереселенцами, репрессированными… Тогда же был открыт №5 Литвинский детский дом.</p>
-      <p class="small rv" style="--d:3">КГУ «Школа-Интернат-Колледж Осакаровского района» управления образования Карагандинской области 27.07.2020 года на основании Постановления Акимата Карагандинской области осуществлено переименование КГУ «Литвинская школа-интернат для детей-сирот и детей, оставшихся без попечения родителей, Осакаровского района Карагандинской области» управления образования Карагандинской области в КГУ «Школа-интернат-колледж Осакаровского района» Управления образования Карагандинской области.</p>
-    </div>
-  </div>
-</section>
-
-<!-- 13 · Компанейский детдом -->
-<section class="slide dark" data-title="Компанейский детский дом" data-n="13">
-  <div class="wrap">
-    <div class="col">
-      <div class="kicker rv">Детский дом</div>
-      <h2 class="rv" style="--d:1"><em>Компанейский</em> детский дом</h2>
-      <p class="lead rv" style="--d:2">Компанейский детский дом был создан в 30-х годах. Первыми его «жильцами» были беспризорники и малолетние преступники, а само учреждение являлось тогда трудовой колонией. Позже стало детским домом, но контингент оставался тот же: сироты, беспризорники.</p>
-      <p class="src rv" style="--d:3">Е. Кузнецова. Дети Карлага</p>
-    </div>
-    <figure class="photo rv" style="--d:2;--r:1.2deg">
-      <img src="img/news.jpg" alt="Газетная статья «Дети Карлага»" data-zoom loading="lazy">
-      <figcaption>Е. Кузнецова. «Дети Карлага»</figcaption>
-    </figure>
-  </div>
-</section>
-
-<!-- 14 · Учебный комбинат (точка №4) -->
-<section class="slide light" data-title="Подготовка кадров в Карлаге" data-n="14">
-  <div class="wrap rev">
-    <figure class="photo md rv" style="--d:2;--r:-1deg">
-      <img src="img/table1.png" alt="Трудовое использование подростков-спецпереселенцев" data-zoom loading="lazy">
-      <figcaption>Нажмите на таблицу, чтобы увеличить</figcaption>
-    </figure>
-    <div class="col">
-      <div class="kicker rv">Точка №4 · Долинка</div>
-      <h2 class="rv" style="--d:1">Подготовка <em>кадров</em> в Карлаге</h2>
-      <p class="txt rv" style="--d:2">Карлаг систематически занимался подготовкой кадров для всех отраслей экономики. В 1932 году на учебном комбинате села Долинское действовали курсы по подготовке следующих специалистов: модельщиков, слесарей, токарей, животноводов, столяров, плотников, агрономов, зоотехников, шоферов, штукатуров, каменщиков, фрезеровщиков, фельдшеров и т.п. Из этой среды не стоит исключать несовершеннолетних узников Карлага, которые были вовлечены в учебный процесс.</p>
-      <p class="src rv" style="--d:3">Таблица составлена по материалам диссертационного исследования Калыбековой М.Ч., которая использовала документы Архива Комитета по правовой статистике и спецучетам Генеральной Прокуратуры РК.</p>
-      <button class="chip rv" style="--d:3" data-open-map><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/></svg>Показать на карте</button>
-    </div>
-  </div>
-</section>
-
-<!-- 15 · Количество детей -->
-<section class="slide dark" data-title="Количество детей Карлага" data-n="15">
-  <div class="wrap">
-    <div class="col">
-      <div class="kicker rv">В цифрах</div>
-      <h2 class="rv" style="--d:1">Количество детей Карлага <em>по годам</em></h2>
-      <div class="stats rv" style="--d:2">
-        <div class="stat"><b>1048</b><span>детей родилось в Карлаге в 1940–1941 годах</span></div>
-        <div class="stat"><b>1713</b><span>детей — в 1950–1952 годах</span></div>
-        <div class="stat"><b>576</b><span>детей размещены в 5 домах младенца</span></div>
-      </div>
-      <p class="txt rv" style="--d:3">По состоянию на 1 января 1938 года в Карлаге находились 655 беременных и кормящих матерей из 2103 женщин. В 1941 году прибыл этап со 108 беременными женщинами [c.85].</p>
-      <p class="src rv" style="--d:3">Шаймуханов Д.А., Шаймуханова С.Д. Карлаг. – Караганда, 1997. – 175 с.</p>
-    </div>
-    <div class="tblwrap rv" style="--d:2">
-      <table class="t">
-        <thead><tr><th>№</th><th>Год</th><th>Детей<br>до 16 лет</th><th>Детей<br>до 18 лет</th><th>Итого</th></tr></thead>
-        <tbody>
-          <tr><td>1</td><td>1940</td><td>19</td><td>132</td><td>151</td></tr>
-          <tr><td>2</td><td>1942</td><td>38</td><td>178</td><td>216</td></tr>
-          <tr><td>3</td><td>1947</td><td>–</td><td>–</td><td>814</td></tr>
-          <tr><td>4</td><td>1950</td><td>–</td><td>–</td><td>209</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- 16 · Смертность -->
-<section class="slide light" data-title="Смертность детей" data-n="16">
-  <div class="wrap rev swapm">
-    <div class="col">
-      <div class="tblwrap rv" style="--d:2">
-        <table class="t">
-          <thead><tr><th>Годы</th><th>Среднемесячный контингент детей за год</th><th>Всего умерло за год</th></tr></thead>
-          <tbody>
-            <tr><td>1941</td><td>1001</td><td>202</td></tr>
-            <tr><td>1942</td><td>805</td><td>314</td></tr>
-            <tr><td>1943</td><td>733</td><td>226</td></tr>
-            <tr><td>1944</td><td>837</td><td>182</td></tr>
-            <tr><td>1945</td><td>740</td><td>–</td></tr>
-            <tr><td>1950</td><td>–</td><td>143</td></tr>
-            <tr><td>1951</td><td>880</td><td>99</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="src rv" style="--d:3">* Таблица составлена на основе данных труда Шаймуханов Д.А., Шаймуханова С.Д. Карлаг.</p>
-    </div>
-    <div class="col">
-      <div class="kicker rv">Цена лагеря</div>
-      <h2 class="rv" style="--d:1">Дети, <em>которые не вернулись</em></h2>
-      <div class="stats rv" style="--d:2">
-        <div class="stat"><b>451</b><span>малолетка в лагере в 1939 году</span></div>
-        <div class="stat"><b>114</b><span>детей умерло за один год</span></div>
-      </div>
-      <blockquote class="quote rv" style="--d:3">Как вспоминает в ту пору несовершеннолетняя узница Карлага Людмила Дембовская, «дети умирали как мухи, не было ни дня, что бы не хоронили по 18-20 человек».</blockquote>
-      <figure class="photo rv" style="--d:3;--r:1deg;max-width:420px">
-        <img src="img/gate.jpg" alt="Мемориал на территории Карлага" data-zoom loading="lazy">
-      </figure>
-    </div>
-  </div>
-</section>
-
-<!-- 17 · Практическая значимость -->
-<section class="slide dark" data-title="Практическая значимость" data-n="17">
+<!-- 08 · Практическая значимость -->
+<section class="slide dark" data-title="Практическая значимость" data-n="08">
   <div class="wrap">
     <div class="col">
       <div class="kicker rv">Для чего это нужно</div>
@@ -586,8 +410,8 @@ table.t tbody tr:nth-child(even){background:rgba(199,154,82,.14)}
   </div>
 </section>
 
-<!-- 18 · Источники -->
-<section class="slide light" data-title="Источники" data-n="18">
+<!-- 09 · Источники -->
+<section class="slide light" data-title="Источники" data-n="09">
   <div class="wrap rev">
     <figure class="photo sm rv" style="--d:2;--r:-1.5deg">
       <img src="img/ku.jpg" alt="А. Кукушкина. Акмолинский лагерь жен «изменников Родины»" data-zoom loading="lazy">
@@ -607,8 +431,8 @@ table.t tbody tr:nth-child(even){background:rgba(199,154,82,.14)}
   </div>
 </section>
 
-<!-- 19 · Заключение -->
-<section class="slide dark final" data-title="Заключение" data-n="19">
+<!-- 10 · Заключение -->
+<section class="slide dark final" data-title="Заключение" data-n="10">
   <div class="wrap">
     <div class="col">
       <div class="kicker rv">Вместо точки</div>
